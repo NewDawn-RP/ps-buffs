@@ -1,13 +1,12 @@
-local QBCore = exports['qb-core']:GetCoreObject()
 local playerBuffs = {}
 local next = next
 
 --- Adds a buff to player
---- @param citizenID string - Player identifier
+--- @param identifier string - Player identifier
 --- @param buffName string - Name of the buff
 --- @param time number | nil - Optional time to add or how long you want buff to be
 --- @return bool
-local function AddBuff(sourceID, citizenID, buffName, time)
+local function AddBuff(sourceID, identifier, buffName, time)
     local buffData = Config.Buffs[buffName]
     -- Check if we were given a correct buff name
     if buffData == nil then
@@ -15,20 +14,20 @@ local function AddBuff(sourceID, citizenID, buffName, time)
     end
 
     -- If the player had no buffs at all then add them to the table
-    if not playerBuffs[citizenID] then
-        playerBuffs[citizenID] = {}
+    if not playerBuffs[identifier] then
+        playerBuffs[identifier] = {}
     end
 
     local maxTime = buffData.maxTime
 
     -- If the player didnt already have the buff requested set it to time or maxTime
-    if not playerBuffs[citizenID][buffName] then
+    if not playerBuffs[identifier][buffName] then
         local buffTime = maxTime
         if time then
             buffTime = time
         end
         
-        playerBuffs[citizenID][buffName] = buffTime
+        playerBuffs[identifier][buffName] = buffTime
         
         -- Since the player didnt already have this buff tell the front end to show it
         if buffData.type == 'buff' then
@@ -52,47 +51,45 @@ local function AddBuff(sourceID, citizenID, buffName, time)
 
     else
         -- Since the player already had a buff increase the buff time, but not higher than max buff time
-        local newTime = playerBuffs[citizenID][buffName] + time
+        local newTime = playerBuffs[identifier][buffName] + time
         
         if newTime > maxTime then
             newTime = maxTime
         end
         
-        playerBuffs[citizenID][buffName] = newTime
+        playerBuffs[identifier][buffName] = newTime
     end
 
     return true
-end exports('AddBuff', AddBuff)
+end 
+exports('AddBuff', AddBuff)
 
 --- Removes a buff from provided player
---- @param citizenID string - Player identifier
+--- @param identifier string - Player identifier
 --- @param buffName string - Name of the buff
 --- @return bool - Success of removing the player buff
-local function RemoveBuff(citizenID, buffName)
+local function RemoveBuff(identifier, buffName)
     local buffData = Config.Buffs[buffName]
-    if playerBuffs[citizenID] and playerBuffs[citizenID][buffName] then
+    if playerBuffs[identifier] and playerBuffs[identifier][buffName] then
         
-        playerBuffs[citizenID][buffName] = nil
+        playerBuffs[identifier][buffName] = nil
 
-        local player = QBCore.Functions.GetPlayerByCitizenId(citizenID)
-        local sourceID = nil
+        local xPlayer = ESX.GetPlayerFromIdentifier(identifier)
 
-        if player then
-            sourceID = player.PlayerData.source
-        end
+        if not xPlayer then return end
 
         -- Check if player is online
         if sourceID then
             -- Send a nui call to front end to stop showing icon
             if buffData.type == 'buff' then
                 -- Call client event to send nui to front end to stop showing buff
-                TriggerClientEvent('hud:client:BuffEffect', sourceID, {
+                TriggerClientEvent('hud:client:BuffEffect', xPlayer.source, {
                     display = false,
                     buffName = buffName,
                 })
             else
                 -- Call client event to send nui to front end to stop showing enhancement
-                TriggerClientEvent('hud:client:EnhancementEffect', sourceID, {
+                TriggerClientEvent('hud:client:EnhancementEffect', xPlayer.source, {
                     display = false,    
                     enhancementName = buffName,
                 })
@@ -101,42 +98,44 @@ local function RemoveBuff(citizenID, buffName)
 
         -- Check to see if that was the player's last buff
         -- If so, then remove the player from the table to ensure we dont loop them
-        if next(playerBuffs[citizenID]) == nil then
-            playerBuffs[citizenID] = nil
+        if next(playerBuffs[identifier]) == nil then
+            playerBuffs[identifier] = nil
         end
 
         return true
     end
 
     return false
-end exports('RemoveBuff', RemoveBuff)
+end 
+exports('RemoveBuff', RemoveBuff)
 
 --- Method to fetch if player has buff with name and is not nil
---- @param citizenID string - Player identifier
+--- @param identifier string - Player identifier
 --- @param buffName string - Name of the buff
 --- @return bool
-local function HasBuff(citizenID, buffName)
-    if playerBuffs[citizenID] then
-        return playerBuffs[citizenID][buffName] ~= nil
+local function HasBuff(identifier, buffName)
+    if playerBuffs[identifier] then
+        return playerBuffs[identifier][buffName] ~= nil
     end
 
     return false
-end exports('HasBuff', HasBuff)
+end
+exports('HasBuff', HasBuff)
 
-QBCore.Functions.CreateCallback('buffs:server:fetchBuffs', function(source, cb)
-    local player = QBCore.Functions.GetPlayer(source)
-    local citizenID = player.PlayerData.citizenid
-    cb(playerBuffs[citizenID])
+lib.callback.register('buffs:server:fetchBuffs', function(source)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    local identifier = xPlayer.identifier
+    return playerBuffs[identifier]
 end)
 
-QBCore.Functions.CreateCallback('buffs:server:addBuff', function(source, cb, buffName, time)
-    local player = QBCore.Functions.GetPlayer(source)
-    local citizenID = player.PlayerData.citizenid
-    cb(AddBuff(source, citizenID, buffName, time))
+lib.callback.register('buffs:server:addBuff', function(source, buffName, time)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    local identifier = xPlayer.identifier
+    return AddBuff(source, identifier, buffName, time)
 end)
 
 CreateThread(function()
-    local function DecrementBuff(sourceID, citizenID, buffName, currentTime)
+    local function DecrementBuff(sourceID, identifier, buffName, currentTime)
         local buffData = Config.Buffs[buffName]
         local updatedTime = currentTime - Config.TickTime
 
@@ -153,9 +152,9 @@ CreateThread(function()
                     })
                 end
             end
-            RemoveBuff(citizenID, buffName)
+            RemoveBuff(identifier, buffName)
         else
-            playerBuffs[citizenID][buffName] = updatedTime
+            playerBuffs[identifier][buffName] = updatedTime
             -- Only need to update buffs since they show progress on client
             if buffData.type == 'buff' then
                 -- Check if player is online
@@ -176,8 +175,8 @@ CreateThread(function()
     -- We ensure that when removing any buff, we check to see if it was the player's last buff
     -- Then we remove that player from our table to ensure we dont loop them
     while true do
-        for citizenID, buffTable in pairs(playerBuffs) do
-            local player = QBCore.Functions.GetPlayerByCitizenId(citizenID)
+        for identifier, buffTable in pairs(playerBuffs) do
+            local player = ESX.GetPlayerFromIdentifier(identifier)
             local sourceID = nil
             
             if player then
@@ -185,7 +184,7 @@ CreateThread(function()
             end
             
             for buffName, currentTime in pairs(buffTable) do
-                DecrementBuff(sourceID, citizenID, buffName, currentTime)
+                DecrementBuff(sourceID, identifier, buffName, currentTime)
             end
         end
 

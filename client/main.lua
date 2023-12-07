@@ -1,14 +1,8 @@
-local QBCore = exports['qb-core']:GetCoreObject()
-
 local function GetBuffs()
     -- If making multiple calls to GetBuffs we dont get a result of the 2nd call
     -- The wait seems to fix the issue
     Wait(500)
-    local p = promise.new()
-    QBCore.Functions.TriggerCallback('buffs:server:fetchBuffs', function(result)
-        p:resolve(result)
-    end)
-    return Citizen.Await(p)
+    return lib.callback.await('buffs:server:fetchBuffs', false)
 end
 
 --- Method to fetch if player has buff with name and is not nil
@@ -104,15 +98,10 @@ end exports('GetBuffNUIData', GetBuffNUIData)
 --- @param buffName string - Name of the buff
 --- @return bool - Success of removing the player buff
 local function AddBuff(buffName, time)
-    local p = promise.new()
-    QBCore.Functions.TriggerCallback('buffs:server:addBuff', function(result)
-        p:resolve(result)
-    end, buffName, time)
-    return Citizen.Await(p)
-end exports('AddBuff', AddBuff)
+    return lib.callback.await('buffs:server:addBuff', false, buffName, time)
+end 
 
-
-
+exports('AddBuff', AddBuff)
 
 --- Custom Buffs, edit to your liking ---
 

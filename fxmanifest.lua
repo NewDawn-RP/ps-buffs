@@ -10,6 +10,8 @@ lua54 'yes'
 use_fxv2_oal 'yes'
 
 shared_scripts {
+	'@es_extended/imports.lua',
+    '@ox_lib/init.lua',
 	'shared/config.lua',
 }
 
