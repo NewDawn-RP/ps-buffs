@@ -14,7 +14,8 @@ local function HasBuff(buffName)
         return buffs[buffName] ~= nil
     end
     return false
-end exports('HasBuff', HasBuff)
+end 
+exports('HasBuff', HasBuff)
 
 --- Method to fetch buff details if player has buff active
 --- @param buffName string - Name of the buff
@@ -55,7 +56,8 @@ local function GetBuff(buffName)
             type = buffData.type,
         }
     end
-end exports('GetBuff', GetBuff)
+end 
+exports('GetBuff', GetBuff)
 
 --- Method to fetch nui details of all buffs, used when a player that had buffs
 --- logged out and back in to the server
@@ -91,7 +93,8 @@ local function GetBuffNUIData()
     end
 
     return nuiData
-end exports('GetBuffNUIData', GetBuffNUIData)
+end 
+exports('GetBuffNUIData', GetBuffNUIData)
 
 --- Method to add buff to player
 --- @param playerID string - Player identifier
@@ -123,7 +126,8 @@ local function StaminaBuffEffect(time, value)
             hasStaminaBuffActive = false
         end)
     end
-end exports('StaminaBuffEffect', StaminaBuffEffect)
+end 
+exports('StaminaBuffEffect', StaminaBuffEffect)
 
 --- Method to add swimming buff to player
 --- @param time  - Time in ms the health buff will be active
@@ -143,7 +147,8 @@ local function SwimmingBuffEffect(time, value)
             hasSwimmingBuffActive = false
         end)
     end
-end exports('SwimmingBuffEffect', SwimmingBuffEffect)
+end 
+exports('SwimmingBuffEffect', SwimmingBuffEffect)
 
 --- Method to add health buff to player
 --- @param time  - Time in ms the health buff will be active
@@ -164,7 +169,8 @@ local function AddHealthBuff(time, value)
             hasHealthBuffActive = false
         end)
     end
-end exports('AddHealthBuff', AddHealthBuff)
+end 
+exports('AddHealthBuff', AddHealthBuff)
 
 --- Method to add armor buff to player
 --- @param time  - Time in ms the health buff will be active
@@ -185,7 +191,8 @@ local function AddArmorBuff(time, value)
             hasArmorBuffActive = false
         end)
     end
-end exports('AddArmorBuff', AddArmorBuff)
+end 
+exports('AddArmorBuff', AddArmorBuff)
 
 --- Method to add stress buff to player
 --- @param time  - Time in ms the stress buff will be active
@@ -203,4 +210,5 @@ local function AddStressBuff(time, value)
             hasStressBuffActive = false
         end)
     end
-end exports('AddStressBuff', AddStressBuff)
+end 
+exports('AddStressBuff', AddStressBuff)
