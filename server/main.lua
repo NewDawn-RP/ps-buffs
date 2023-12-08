@@ -13,6 +13,10 @@ local function AddBuff(sourceID, identifier, buffName, time)
         return false
     end
 
+    if not sourceID then 
+        return false 
+    end
+
     -- If the player had no buffs at all then add them to the table
     if not playerBuffs[identifier] then
         playerBuffs[identifier] = {}
