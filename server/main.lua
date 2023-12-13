@@ -135,7 +135,7 @@ end)
 lib.callback.register('buffs:server:addBuff', function(source, buffName, time)
     local xPlayer = ESX.GetPlayerFromId(source)
     local identifier = xPlayer.identifier
-    return AddBuff(source, identifier, buffName, time)
+    return AddBuff(xPlayer.source, identifier, buffName, time)
 end)
 
 CreateThread(function()
@@ -180,11 +180,11 @@ CreateThread(function()
     -- Then we remove that player from our table to ensure we dont loop them
     while true do
         for identifier, buffTable in pairs(playerBuffs) do
-            local player = ESX.GetPlayerFromIdentifier(identifier)
+            local xPlayer = ESX.GetPlayerFromIdentifier(identifier)
             local sourceID = nil
             
-            if player then
-                sourceID = player.PlayerData.source
+            if xPlayer then
+                sourceID = xPlayer.source
             end
             
             for buffName, currentTime in pairs(buffTable) do

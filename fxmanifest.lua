@@ -24,5 +24,5 @@ server_scripts {
 }
 
 dependencies {
-	'qb-core'
+	'es_extended'
 }

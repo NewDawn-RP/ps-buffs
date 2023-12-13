@@ -162,8 +162,8 @@ local function AddHealthBuff(time, value)
         CreateThread(function()
             while HasBuff("super-health") do
                 Wait(5000)
-                if GetEntityHealth(PlayerPedId()) < 200 then
-                    SetEntityHealth(PlayerPedId(), GetEntityHealth(PlayerPedId()) + value)
+                if GetEntityHealth(cache.ped or PlayerPedId()) < 200 then
+                    SetEntityHealth(cache.ped or PlayerPedId(), GetEntityHealth(cache.ped or PlayerPedId()) + value)
                 end
             end
             hasHealthBuffActive = false
@@ -184,8 +184,8 @@ local function AddArmorBuff(time, value)
         CreateThread(function()
             while HasBuff("super-armor") do
                 Wait(5000)
-                if GetPedArmour(PlayerPedId()) < 100 then
-                    SetPedArmour(PlayerPedId(), GetPedArmour(PlayerPedId()) + value)
+                if GetPedArmour(cache.ped or PlayerPedId()) < 100 then
+                    SetPedArmour(cache.ped or PlayerPedId(), GetPedArmour(cache.ped or PlayerPedId()) + value)
                 end
             end
             hasArmorBuffActive = false
